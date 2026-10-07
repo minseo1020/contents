@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 성격 MBTI 찾기 & 치이카와 캐릭터 매칭</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #fff0f5 0%, #fbcfe8 50%, #f472b6 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .font-gowun {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        .cute-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            border: 3px solid #fbcfe8;
+            box-shadow: 0 10px 30px -5px rgba(244, 114, 182, 0.3);
+        }
+        .cute-btn {
+            background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 18px 0 rgba(236, 72, 153, 0.35);
+        }
+        .cute-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.5);
+        }
+        .cute-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        /* Custom radio option selection */
+        .radio-box input[type="radio"]:checked + label {
+            background-color: #fce7f3;
+            border-color: #ec4899;
+            color: #be185d;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+        }
+        @keyframes pulse-heart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+        .animate-heart {
+            animation: pulse-heart 1.8s infinite ease-in-out;
+        }
+        /* Prose style customizations for AI markdown output */
+        .prose h3 {
+            color: #be185d;
+            font-family: 'Gowun Dodum', sans-serif;
+            font-size: 1.15rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose p {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="py-8 px-4 sm:px-6">
+
+    <div class="max-w-3xl mx-auto">
+        <!-- Main Header -->
+        <header class="text-center mb-8">
+            <div class="inline-block p-4 bg-white/90 rounded-full shadow-lg mb-3 animate-heart border-2 border-pink-200">
+                <span class="text-4xl">🎀</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-pink-600 font-gowun tracking-wide drop-shadow-sm mb-2">
+                나의 성격 MBTI 찾기
+            </h1>
+            <p class="text-pink-700 text-sm sm:text-base font-semibold">
+                ✨ 치이카와 캐릭터 매칭 & Gemini AI 심층 분석 ✨
+            </p>
+        </header>
+
+        <!-- API Key Accordion & Guide -->
+        <div class="cute-card rounded-3xl p-5 mb-8">
+            <div class="flex items-center justify-between cursor-pointer" id="apiToggleHeader">
+                <div class="flex items-center space-x-2 text-pink-600 font-bold text-sm sm:text-base">
+                    <i class="fa-solid fa-key text-pink-500"></i>
+                    <span>Gemini API Key 설정 (AI 심층 분석용)</span>
+                </div>
+                <button class="text-pink-500 focus:outline-none" id="apiToggleIcon">
+                    <i class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                </button>
+            </div>
+            
+            <div id="apiContent" class="mt-4 pt-4 border-t border-pink-200">
+                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                    <input type="password" id="apiKeyInput" placeholder="Gemini API Key를 입력하세요..." 
+                        class="flex-1 px-4 py-2.5 text-sm rounded-2xl border-2 border-pink-200 focus:border-pink-500 focus:outline-none transition">
+                    <button id="saveKeyBtn" class="cute-btn text-white px-5 py-2.5 rounded-2xl text-sm font-bold shrink-0">
+                        저장하기
+                    </button>
+                </div>
+                <!-- API Guide Accordion -->
+                <div class="bg-pink-50/80 rounded-2xl p-4 border border-pink-200 text-xs sm:text-sm text-gray-700 space-y-2">
+                    <p class="font-bold text-pink-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i> API Key 무료 발급 방법:
+                    </p>
+                    <ol class="list-decimal list-inside space-y-1 text-gray-600 pl-1 leading-relaxed">
+                        <li><a href="https://aistudio.google.com/" target="_blank" class="text-pink-600 underline font-semibold">Google AI Studio</a> 접속 및 구글 계정 로그인</li>
+                        <li>좌측 상단 또는 화면 중앙의 <strong>'Get API key'</strong> 클릭</li>
+                        <li><strong>'Create API key'</strong> 버튼을 클릭하여 새 키 발급</li>
+                        <li>발급받은 키를 복사하여 위 입력란에 저장하면 AI 심층 분석 가능!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Section Container -->
+        <div id="quizContainer" class="cute-card rounded-3xl p-6 sm:p-8 mb-8">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-pink-100">
+                <span class="text-xs font-black text-pink-600 bg-pink-100 px-3 py-1.5 rounded-full">성격 진단 질문</span>
+                <span id="progressText" class="text-xs font-bold text-pink-600">진행률: 0 / 12</span>
+            </div>
+
+            <!-- Questions Form -->
+            <form id="mbtiForm" class="space-y-6">
+                <div id="questionsList" class="space-y-6"></div>
+
+                <!-- Alert Message -->
+                <div id="errorAlert" class="hidden p-3 bg-red-100 border border-red-300 text-red-600 text-xs sm:text-sm rounded-xl text-center font-bold">
+                    모든 질문에 답변해 주세요!
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4 text-center">
+                    <button type="submit" id="submitBtn" class="cute-btn w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold text-lg flex items-center justify-center gap-2 mx-auto">
+                        <span>결과 분석하기</span>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingBox" class="hidden cute-card rounded-3xl p-10 text-center my-8">
+            <div class="inline-block animate-spin rounded-full h-14 w-14 border-4 border-pink-300 border-t-pink-600 mb-4"></div>
+            <h3 class="text-xl font-bold text-pink-600 font-gowun mb-2">성격과 치이카와 매칭을 분석하고 있어요! 🌸</h3>
+            <p class="text-sm text-gray-600 animate-pulse">Gemini AI가 나와 딱 맞는 캐릭터와 성격 보고서를 작성 중입니다...</p>
+        </div>
+
+        <!-- Result Display Section -->
+        <div id="resultBox" class="hidden cute-card rounded-3xl p-6 sm:p-8 mb-8">
+            <!-- Header Result -->
+            <div class="text-center mb-6">
+                <span class="bg-pink-100 text-pink-600 text-xs font-black px-4 py-1.5 rounded-full inline-block mb-2">
+                    YOUR MATCH RESULT
+                </span>
+                <h2 id="resultMbti" class="text-3xl sm:text-4xl font-black text-pink-600 font-gowun mb-1">
+                    INFP - 치이카와
+                </h2>
+                <p id="resultSubtitle" class="text-pink-500 font-medium text-sm sm:text-base"></p>
+            </div>
+
+            <!-- Character Card Layout -->
+            <div class="bg-white rounded-2xl p-6 border-2 border-pink-200 shadow-sm mb-6 flex flex-col md:flex-row items-center gap-6">
+                <div id="characterImgContainer" class="w-40 h-40 sm:w-48 sm:h-48 bg-pink-50 rounded-2xl border-2 border-pink-200 flex items-center justify-center p-2 shrink-0 shadow-inner overflow-hidden">
+                    <!-- Image rendered dynamically -->
+                    <img id="characterImage" src="" alt="캐릭터 이미지" class="w-full h-full object-contain rounded-xl">
+                </div>
+                <div class="flex-1 space-y-3 text-center md:text-left">
+                    <div class="inline-block bg-pink-500 text-white text-xs px-3 py-1 rounded-full font-bold">
+                        매칭 캐릭터: <span id="characterName">치이카와</span>
+                    </div>
+                    <h3 id="characterTagline" class="text-lg font-bold text-gray-800 font-gowun"></h3>
+                    <p id="characterDesc" class="text-sm text-gray-600 leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- Gemini AI Analysis Section -->
+            <div class="bg-white/90 rounded-2xl p-6 border-2 border-pink-200 shadow-sm">
+                <div class="flex items-center gap-2 mb-3 pb-2 border-b border-pink-100">
+                    <i class="fa-solid fa-sparkles text-pink-500 text-lg"></i>
+                    <h3 class="font-bold text-pink-600 text-lg font-gowun">Gemini AI 심층 분석 리포트</h3>
+                </div>
+                <div id="aiReportContent" class="text-sm text-gray-700 leading-relaxed prose max-w-none">
+                    <!-- AI content injected here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-8 text-center">
+                <button id="retryBtn" class="cute-btn px-8 py-3.5 rounded-full text-white font-bold text-sm inline-flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> 다시 테스트하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Image Asset File Paths for Chiikawa Characters ---
+        const imageAssets = {
+            "치이카와": "치이카와.png",
+            "하치와레": "하치와레.png",
+            "우사기": "우사기.png",
+            "모몽가": "모몽가.png",
+            "쿠리만쥬": "쿠리만쥬.png",
+            "랏코": "랏코.png",
+            "시사": "시사.png",
+            "헌책방": "헌책방.png",
+            "세이렌": "세이렌.png",
+            "별똥별": "별똥별.png",
+            "미도리": "미도리.png",
+            "키메라": "키메라.png",
+            "아노코": "아노코.png",
+            "풍뎅이": "풍뎅이.png",
+            "노동갑옷": "노동갑옷.png",
+            "고블린": "고블린.png"
+        };
+
+        // --- Character Mappings ---
+        const chiikawaMapping = {
+            "INFP": { name: "치이카와", subtitle: "소심하지만 따뜻하고 순수한 마음의 소유자", desc: "감성적이고 정이 많아 눈물도 많지만, 소중한 친구를 위해서라면 위험 앞에서도 용기를 내는 수줍은 영웅 스타일입니다." },
+            "ENFP": { name: "하치와레", subtitle: "긍정 파워 가득한 해피 바이러스", desc: "호기심이 넘치고 어떠한 미궁이나 어두운 상황 속에서도 '어떻게든 될 거야!'라며 주위를 밝게 다독여주는 인싸 친구입니다." },
+            "ESTP": { name: "우사기", subtitle: "거침없는 직진과 자유로운 영혼", desc: "자유분방하고 행동력이 어마어마하며 말보다 행동이 앞서는 타입! 거침없는 기세로 독보적인 에너지를 발산합니다." },
+            "ENTP": { name: "모몽가", subtitle: "당당하고 귀여운 자신감 끝판왕", desc: "자기애가 넘치고 관심받는 것을 즐기며, 당당하고 엉뚱한 매력으로 어딜 가나 시선을 사로잡는 존재감을 지녔습니다." },
+            "ISTP": { name: "쿠리만쥬", subtitle: "마이웨이를 즐기는 쿨한 기성인", desc: "조용히 자신만의 맛있는 디저트와 여유를 즐기며, 묵묵하게 할 일을 해내는 쿨하고 현실적인 어른스러움을 갖추고 있습니다." },
+            "ISTJ": { name: "랏코", subtitle: "철저한 노력파 상위 랭커 리더", desc: "책임감이 강하고 자신에게 엄격하며 지속적인 단련을 고수합니다. 겉은 냉철해 보이지만 후배를 챙길 줄 아는 든든한 실력자입니다." },
+            "ESFJ": { name: "시사", subtitle: "상냥함과 근면 성실의 아이콘", desc: "남을 돕는 것에 기쁨을 느끼며 다정다감하고 열심히 자격증을 공부하는 성실하고 기분 좋은 에너지를 전해줍니다." },
+            "ISFJ": { name: "헌책방", subtitle: "세심하고 조용한 따뜻한 조력자", desc: "친절하고 마음씨가 비단 같으며 배려심이 깊어 주변 친구들의 작은 변화도 세심하게 챙겨주는 안식처 같은 친구입니다." },
+            "INFJ": { name: "세이렌", subtitle: "신비롭고 완벽주의적인 깊은 내면", desc: "겉으로는 온화해 보이지만 깊은 통찰력과 자신만의 목표 의식을 지니고 있어 호기심과 신비로움을 동시에 자아냅니다." },
+            "ESTJ": { name: "별똥별", subtitle: "확고한 추진력과 소신 있는 리더", desc: "목표가 명확하고 카리스마가 넘치며 추진력이 뛰어납니다. 당당하게 상황을 리드하고 자신의 길을 개척하는 스타일입니다." },
+            "ENFJ": { name: "미도리", subtitle: "모두를 이끄는 온화한 인사이더", desc: "친화력이 무척 뛰어나고 함께하는 모임의 분위기를 따뜻하게 이끌어주며 주위 사람들에게 동기부여를 주는 타입입니다." },
+            "ISFP": { name: "키메라", subtitle: "감성적이고 다채로운 매력의 예술가", desc: "평화롭고 잔잔한 일상을 사랑하면서도 내면에 개성과 감수성을 가득 품고 있어 알면 알수록 깊은 매력이 느껴집니다." },
+            "ESFP": { name: "아노코", subtitle: "주목받는 것을 좋아하는 에너지 넘치는 분위기 메이커", desc: "사람들의 관심을 즐기며 상황을 흥겹게 만드는 능력이 탁월합니다. 본능적인 순발력과 화려함을 갖추고 있습니다." },
+            "INTP": { name: "풍뎅이", subtitle: "독특한 탐구심과 자신만의 세계", desc: "나만의 독특한 호기심에 빠져있기를 좋아하며 남들과 다른 관점으로 세상을 바라보는 미스터리하고 지적인 친구입니다." },
+            "ENTJ": { name: "노동갑옷", subtitle: "체계적인 관리와 명확한 판단력", desc: "전체적인 시스템을 효율적으로 관리하고 사람들에게 명확하게 보상을 배분하는 탁월한 전략가이자 리더입니다." },
+            "INTJ": { name: "고블린", subtitle: "철두철미한 원칙주의 전략가", desc: "원칙을 엄격하게 준수하며 체계적인 시각으로 상황을 분석하고 엄격해 보이지만 속은 철저하게 단단한 스타일입니다." }
+        };
+
+        // --- 12 Questionnaire Questions ---
+        const questions = [
+            { id: 1, dim: "EI", q: "주말이나 쉬는 날에는 집에서 쉬기보다 외출해서 사람들과 어울릴 때 에너지가 생겨요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 2, dim: "EI", q: "처음 만난 사람이나 새로운 모임에서도 쉽게 먼저 말을 건네고 분위기를 리드해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 3, dim: "EI", q: "생각을 혼자 오랫동안 품기보다는 바로 대화나 말로 표현하면서 정리하는 편이에요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 4, dim: "SN", q: "상상이나 비유적인 이야기보다 실제 일어난 사실과 눈앞의 경험을 더 신뢰해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 5, dim: "SN", q: "미래의 가능성이나 상상 속 비전보다는 현재 내가 바로 처리할 수 있는 현실에 집중해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 6, dim: "SN", q: "어떤 일을 할 때 원칙이나 순서가 명확하게 명시된 가이드라인이 있는 것을 선호해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 7, dim: "TF", q: "친구가 고민을 털어놓을 때 공감해 주기보다는 객관적인 문제 해결책을 먼저 찾게 돼요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 8, dim: "TF", q: "선택이나 결정을 내릴 때 개인적인 감정보다는 논리와 효율성이 훨씬 중요하다고 믿어요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 9, dim: "TF", q: "상처를 주지 않는 돌려 말하기보다 솔직하고 진솔한 직설적 피드백이 더 도움이 된다고 생각해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 10, dim: "JP", q: "여행이나 약속을 잡을 때 미리 시간대별로 꼼꼼하게 계획을 세워두는 것이 마음 편해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 11, dim: "JP", q: "나의 방이나 책상이 제자리에 정리정돈되어 있어야 집중이 잘 돼요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] },
+            { id: 12, dim: "JP", q: "갑작스러운 일정 변경보다는 처음에 정해둔 스케줄대로 진행되는 것을 선호해요.", opts: ["매우 아니다", "아니다", "그렇다", "매우 그렇다"] }
+        ];
+
+        let apiKey = localStorage.getItem("gemini_mbti_api_key") || "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderQuestions();
+            bindEvents();
+            if(apiKey) {
+                document.getElementById("apiKeyInput").value = apiKey;
+            }
+        });
+
+        function renderQuestions() {
+            const container = document.getElementById("questionsList");
+            container.innerHTML = "";
+
+            questions.forEach((qItem, idx) => {
+                const card = document.createElement("div");
+                card.className = "bg-white/80 p-5 rounded-2xl border border-pink-200 shadow-sm space-y-3";
+
+                const optsHtml = qItem.opts.map((label, optIdx) => {
+                    const val = optIdx + 1; // 1 ~ 4
+                    return `
+                        <div class="radio-box flex-1 text-center">
+                            <input type="radio" id="q${qItem.id}_val${val}" name="q${qItem.id}" value="${val}" class="hidden" required onchange="updateProgress()">
+                            <label for="q${qItem.id}_val${val}" class="block py-2.5 px-1.5 text-xs sm:text-sm text-gray-600 bg-white border-2 border-pink-100 rounded-xl cursor-pointer transition hover:border-pink-300">
+                                ${label}
+                            </label>
+                        </div>
+                    `;
+                }).join("");
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-pink-400 text-white font-black text-xs flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
+                        <p class="text-sm sm:text-base font-bold text-gray-800">${qItem.q}</p>
+                    </div>
+                    <div class="flex gap-1.5 pt-1">
+                        ${optsHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateProgress() {
+            const answered = document.querySelectorAll('#mbtiForm input[type="radio"]:checked').length;
+            document.getElementById("progressText").innerText = `진행률: ${answered} / ${questions.length}`;
+            document.getElementById("errorAlert").classList.add("hidden");
+        }
+
+        function bindEvents() {
+            const header = document.getElementById("apiToggleHeader");
+            const content = document.getElementById("apiContent");
+            const icon = document.getElementById("apiToggleIcon").querySelector("i");
+
+            header.addEventListener("click", () => {
+                content.classList.toggle("hidden");
+                icon.classList.toggle("rotate-180");
+            });
+
+            document.getElementById("saveKeyBtn").addEventListener("click", () => {
+                const val = document.getElementById("apiKeyInput").value.trim();
+                apiKey = val;
+                localStorage.setItem("gemini_mbti_api_key", val);
+                alert("Gemini API Key가 안전하게 저장되었습니다! 🌸");
+            });
+
+            document.getElementById("mbtiForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const answered = document.querySelectorAll('#mbtiForm input[type="radio"]:checked').length;
+                if(answered < questions.length) {
+                    document.getElementById("errorAlert").classList.remove("hidden");
+                    return;
+                }
+
+                const mbtiResult = calculateMBTI();
+                await showResultView(mbtiResult);
+            });
+
+            document.getElementById("retryBtn").addEventListener("click", () => {
+                document.getElementById("mbtiForm").reset();
+                updateProgress();
+                document.getElementById("resultBox").classList.add("hidden");
+                document.getElementById("quizContainer").classList.remove("hidden");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        function calculateMBTI() {
+            let scores = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+
+            questions.forEach(q => {
+                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                if(checked) {
+                    const val = parseInt(checked.value);
+                    const dim = q.dim;
+
+                    if(dim === "EI") {
+                        if(val >= 3) scores.E += val; else scores.I += (5 - val);
+                    } else if(dim === "SN") {
+                        if(val >= 3) scores.S += val; else scores.N += (5 - val);
+                    } else if(dim === "TF") {
+                        if(val >= 3) scores.T += val; else scores.F += (5 - val);
+                    } else if(dim === "JP") {
+                        if(val >= 3) scores.J += val; else scores.P += (5 - val);
+                    }
+                }
+            });
+
+            return [
+                scores.E >= scores.I ? "E" : "I",
+                scores.S >= scores.N ? "S" : "N",
+                scores.T >= scores.F ? "T" : "F",
+                scores.J >= scores.P ? "J" : "P"
+            ].join("");
+        }
+
+        async function showResultView(mbti) {
+            document.getElementById("quizContainer").classList.add("hidden");
+            document.getElementById("loadingBox").classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const charData = chiikawaMapping[mbti] || { name: "치이카와", subtitle: "귀여운 친구", desc: "순수한 매력을 지닌 친구입니다." };
+
+            document.getElementById("resultMbti").innerText = `${mbti} - ${charData.name}`;
+            document.getElementById("resultSubtitle").innerText = charData.subtitle;
+            document.getElementById("characterName").innerText = charData.name;
+            document.getElementById("characterTagline").innerText = `"${charData.subtitle}"`;
+            document.getElementById("characterDesc").innerText = charData.desc;
+
+            // Render Image with URI Encoding for Korean Filenames
+            const filename = imageAssets[charData.name] || "치이카와.png";
+            const imgPath = encodeURI(filename);
+            const imgEl = document.getElementById("characterImage");
+            imgEl.src = imgPath;
+            imgEl.onerror = () => {
+                imgEl.src = "https://via.placeholder.com/200?text=" + encodeURIComponent(charData.name);
+            };
+
+            // Generate Gemini Analysis
+            let reportHtml = "";
+            const cleanApiKey = apiKey ? apiKey.trim() : "";
+
+            if(cleanApiKey) {
+                try {
+                    reportHtml = await fetchGeminiReport(mbti, charData.name, cleanApiKey);
+                } catch(err) {
+                    console.error("Gemini API Error:", err);
+                    reportHtml = `
+                        <div class="p-4 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm">
+                            <p class="font-bold">Gemini API 연동 중 오류가 발생했습니다.</p>
+                            <p class="mt-1">${err.message}</p>
+                            <p class="mt-2 text-gray-500">API 키를 올바르게 입력했는지 확인해 주세요.</p>
+                        </div>
+                    `;
+                }
+            } else {
+                reportHtml = `
+                    <div class="p-4 bg-pink-50 text-pink-700 rounded-xl text-xs sm:text-sm space-y-2">
+                        <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-lightbulb text-pink-500"></i> AI 심층 분석 팁!</p>
+                        <p>상단의 <strong>'Gemini API Key 설정'</strong> 메뉴에서 API 키를 등록하시면 AI가 제공하는 <strong>${mbti} 장단점, 대인관계 스타일, ${charData.name}와의 힐링 케미 보고서</strong>를 받아보실 수 있습니다!</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById("aiReportContent").innerHTML = reportHtml;
+
+            document.getElementById("loadingBox").classList.add("hidden");
+            document.getElementById("resultBox").classList.remove("hidden");
+        }
+
+        async function fetchGeminiReport(mbti, characterName, key) {
+            const systemInstruction = "당신은 치이카와 세계관과 MBTI 성격 이론을 아우르는 상냥하고 전문적인 성격 분석가입니다. 예쁜 마크다운 형식으로 따뜻하고 이해하기 쉬운 문장으로 답변하세요.";
+            const userPrompt = `
+사용자의 MBTI 진단 결과는 **${mbti}** 이며, 매칭된 치이카와 캐릭터는 **'${characterName}'** 입니다.
+
+다음 세 항목을 귀여운 이모지와 함께 구성해서 다정하게 분석해 주세요:
+1. **${mbti}의 주요 성격 강점과 특징**
+2. **'${characterName}' 캐릭터와 ${mbti}의 환상의 케미 및 유사점**
+3. **일상에서 더 행복해질 수 있는 ${mbti} 맞춤 힐링 꿀팁 2가지**
+
+답변은 읽기 편한 마크다운(Markdown) 문법을 활용해 주세요.
+            `;
+
+            // gemini-2.5-flash 모델 엔드포인트
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemInstruction }] }
+                })
+            });
+
+            if(!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || "Gemini API 호출 실패");
+            }
+
+            const resData = await response.json();
+            const textContent = resData.candidates?.[0]?.content?.parts?.[0]?.text || "분석 결과를 불러오지 못했습니다.";
+
+            return typeof marked !== "undefined" ? marked.parse(textContent) : textContent;
+        }
+    </script>
+</body>
+</html>
